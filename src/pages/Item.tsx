@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ItemType from "../Types/ItemType";
 import axios from "axios";
 import ItemcategoryType from "../Types/ItemcategoryType";
+import { Link } from "react-router-dom";
 
 function Item(){
 
@@ -100,6 +101,9 @@ function Item(){
         }
     }
     return(<div>
+        <div className="border border-gray-900 rounded-lg px-4 py-2 mt-2 max-w-[150px] ml-2 bg-blue-200 ">
+            <Link to='/' >Back to Home</Link>
+        </div>
        <table className="container mx-auto py-5">
          <h1 className="text-3xl font-bold mb-5 text-rose-600 ml-10 mt-5">Items</h1>
          <div className="table p-10 w-full border-separate border-spacing-0 border-none text-left">
