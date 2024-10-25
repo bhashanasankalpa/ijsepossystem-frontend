@@ -3,14 +3,22 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import SaleType from "../../Types/SaleType";
+import { useAuth } from "../../context/AuthContext";
 
 function Sale(){
 
     const [sales,setsales] = useState<SaleType[]>([]);
 
+    const {isAuthenticated,jwtToken}= useAuth();
+    const config = {
+        headers:{
+            Authorization:`Bearer ${jwtToken}`
+        }
+    }
+
     async function loadSales(){
         try {
-           const response = await axios.get("http://localhost:8082/sales");
+           const response = await axios.get("http://localhost:8082/sales",config);
            setsales(response.data);
         } catch (error) {
             console.log(error);
@@ -18,9 +26,11 @@ function Sale(){
     }
     useEffect(function(){
         
-        loadSales();
+        if (isAuthenticated) {
+            loadSales();
+        }
         
-    },[])
+    },[isAuthenticated])
 
     return(
         <div className="container mx-auto pt-5 pb-5">

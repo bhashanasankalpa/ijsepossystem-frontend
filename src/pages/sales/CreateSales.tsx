@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ItemType from "../../Types/ItemType";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 function CreateSales(){
 
@@ -9,6 +10,13 @@ function CreateSales(){
     const [items,setItems] = useState<ItemType[]>([]);
     const [orderItems,setOrderItems]= useState<ItemType[]>([]);
     const [total,setTotal]= useState<number>(0);
+
+    const {isAuthenticated,jwtToken}= useAuth();
+    const config = {
+        headers:{
+            Authorization:`Bearer ${jwtToken}`
+        }
+    }
 
     async function saveOrder(){
         var itemIds:any = [];
@@ -21,7 +29,7 @@ function CreateSales(){
             const data = {
                 itemIds:itemIds
             }
-            await axios.post("http://localhost:8082/sales",data)
+            await axios.post("http://localhost:8082/sales",data,config)
             navigate("/sales")
 
         } catch (error) {
@@ -30,14 +38,16 @@ function CreateSales(){
     }
 
     async function loadItems() {
-        const response = await axios.get("http://localhost:8082/items");
+        const response = await axios.get("http://localhost:8082/items",config);
         setItems(response.data);
 
     }
     useEffect(function(){
+      if (isAuthenticated) {
         loadItems();
+      }
         
-    },[])
+    },[isAuthenticated])
 
     function addProductToOrder(item:ItemType){
         const updateOrder = [...orderItems,item]

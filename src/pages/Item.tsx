@@ -3,8 +3,11 @@ import ItemType from "../Types/ItemType";
 import axios from "axios";
 import ItemcategoryType from "../Types/ItemcategoryType";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Item(){
+
+   
 
     const [items,setItems] = useState<ItemType[]>([]);
     const [itemname,setitemname] = useState<string>("");
@@ -12,23 +15,30 @@ function Item(){
     const [itemdescription,setitemDescription]=useState<string>("");
     const [categoryId,setCategoryId] = useState<number>();
     const [categories,setCategories]=useState<ItemcategoryType[]>([]);
-
-
+    
+    const {isAuthenticated,jwtToken}= useAuth();
+    const config = {
+        headers:{
+            Authorization:`Bearer ${jwtToken}`
+        }
+    }
     
     async function loadItems() {
-        const response = await axios.get("http://localhost:8082/items");
+        const response = await axios.get("http://localhost:8082/items",config);
         setItems(response.data);
 
     }
     async function loadItemCategories(){
-        const response = await axios.get("http://localhost:8082/categories")
+        const response = await axios.get("http://localhost:8082/categories",config)
         setCategories(response.data);
     }
     useEffect(function(){
-        loadItems();
-        loadItemCategories();
+        if(isAuthenticated){
+            loadItems();
+            loadItemCategories();
+        }
         
-    },[])
+    },[isAuthenticated])
 
     function handleItemName(event : any){
         setitemname(event.target.value);
@@ -54,7 +64,7 @@ function Item(){
             itemCategoryId:categoryId
         }
         try {
-            await axios.post("http://localhost:8082/items",data);
+            await axios.post("http://localhost:8082/items",data,config);
             loadItems();
             setitemname("");
             setItemprice(0.0);
@@ -73,7 +83,7 @@ function Item(){
             itemCategoryId:categoryId
         }
         try{
-            await axios.put(`http://localhost:8082/items/${itemEditing?.itemId}`,data);
+            await axios.put(`http://localhost:8082/items/${itemEditing?.itemId}`,data,config);
             setitemEditing(null);
             loadItems();
             setitemname("");
@@ -94,7 +104,7 @@ function Item(){
     async function deleteItem(itemId:number){
         try {
             
-            await axios.delete(`http://localhost:8082/items/${itemId}`)
+            await axios.delete(`http://localhost:8082/items/${itemId}`,config)
             loadItems();
         } catch (error) {
             console.log(error);

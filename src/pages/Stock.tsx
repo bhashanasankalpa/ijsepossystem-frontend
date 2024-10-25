@@ -3,6 +3,7 @@ import StockType from "../Types/StockType";
 import axios from "axios";
 import ItemType from "../Types/ItemType";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Stock ()  {
 
@@ -11,9 +12,16 @@ function Stock ()  {
     const [items,setItems] = useState<ItemType[]|any>([]);
     const [itemIdnew,setitemidnew] = useState<number>();
 
+    const {isAuthenticated,jwtToken}= useAuth();
+    const config = {
+        headers:{
+            Authorization:`Bearer ${jwtToken}`
+        }
+    }
+
 
     async function loadItems() {
-        const response = await axios.get("http://localhost:8082/items");
+        const response = await axios.get("http://localhost:8082/items",config);
         setItems(response.data);
 
     }
@@ -21,16 +29,18 @@ function Stock ()  {
     
 
     async function loadStock() {
-        const response = await axios.get("http://localhost:8082/stocks");
+        const response = await axios.get("http://localhost:8082/stocks",config);
         setStocks(response.data);
 
     }
     const[stockEditing,setStockEditing] = useState<StockType | null>(null);
     useEffect(function(){
+       if (isAuthenticated) {
         loadStock();
         loadItems();
+       }
         
-    },[]);
+    },[isAuthenticated]);
 
     function handleStockquantity(event : any){
         setquantity(event.target.value);
@@ -47,7 +57,7 @@ function Stock ()  {
             itemId:itemIdnew
         }
         try {
-            await axios.post("http://localhost:8082/stocks",data);
+            await axios.post("http://localhost:8082/stocks",data,config);
             loadStock();
             setquantity(0);
             
@@ -63,7 +73,7 @@ function Stock ()  {
             itemId:itemIdnew
         }
         try{
-            await axios.put(`http://localhost:8082/stocks/${stockEditing?.stockId}`,data);
+            await axios.put(`http://localhost:8082/stocks/${stockEditing?.stockId}`,data,config);
             setStockEditing(null);
             loadStock();
             setquantity(0);

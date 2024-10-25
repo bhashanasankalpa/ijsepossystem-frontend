@@ -2,19 +2,29 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ItemcategoryType from "../Types/ItemcategoryType";
+import { useAuth } from "../context/AuthContext";
 
 function Itemcategory(){
 
     const [category,setCategory] = useState<ItemcategoryType[]>([]);
 
+    const {isAuthenticated,jwtToken}= useAuth();
+    const config = {
+        headers:{
+            Authorization:`Bearer ${jwtToken}`
+        }
+    }
+
     async function loadItemCategories(){
-        const response = await axios.get("http://localhost:8082/categories")
+        const response = await axios.get("http://localhost:8082/categories",config)
         setCategory(response.data);
     }
 
     useEffect(function(){
-        loadItemCategories();
-    },[]);
+        if(isAuthenticated){
+            loadItemCategories();
+        }
+    },[isAuthenticated]);
 
     const [categoryName,setCategoryName] = useState<string>("");
 
@@ -28,7 +38,7 @@ function Itemcategory(){
             itemCategoryName:categoryName
         }
         
-        const response = await axios.post("http://localhost:8082/categories",data);
+        const response = await axios.post("http://localhost:8082/categories",data,config);
         console.log(response);
         loadItemCategories();
     }
