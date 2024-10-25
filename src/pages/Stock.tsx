@@ -1,12 +1,23 @@
 import { useEffect, useState } from "react";
 import StockType from "../Types/StockType";
 import axios from "axios";
+import ItemType from "../Types/ItemType";
 
 function Stock ()  {
 
     const [stocks,setStocks] = useState<StockType[]>([]);
     const [quantity,setquantity] = useState<number>();
-    const [item_id,setItem_id] = useState<number>();
+    const [items,setItems] = useState<ItemType[]|any>([]);
+    const [itemIdnew,setitemidnew] = useState<number>();
+
+
+    async function loadItems() {
+        const response = await axios.get("http://localhost:8082/items");
+        setItems(response.data);
+
+    }
+
+    
 
     async function loadStock() {
         const response = await axios.get("http://localhost:8082/stocks");
@@ -16,6 +27,8 @@ function Stock ()  {
     const[stockEditing,setStockEditing] = useState<StockType | null>(null);
     useEffect(function(){
         loadStock();
+        loadItems();
+        
     },[]);
 
     function handleStockquantity(event : any){
@@ -23,20 +36,21 @@ function Stock ()  {
     }
 
     function handleItem_id(event : any){
-        setItem_id(event.target.value);
+        setitemidnew(event.target.value);
     }
 
     async function handleSubmit() {
         const data ={
             
             quantity:quantity,
-            itemId:item_id
+            itemId:itemIdnew
         }
         try {
             await axios.post("http://localhost:8082/stocks",data);
             loadStock();
             setquantity(0);
-            setItem_id(0.0);
+            
+            setitemidnew(0.0);
         } catch (error) {
             console.log(error);
         }
@@ -45,21 +59,21 @@ function Stock ()  {
     async function updateStock(){
         const data ={
             quantity:quantity,
-            itemId:item_id
+            itemId:itemIdnew
         }
         try{
             await axios.put(`http://localhost:8082/stocks/${stockEditing?.stockId}`,data);
             setStockEditing(null);
             loadStock();
             setquantity(0);
-            setItem_id(0.0);
+            setitemidnew(0.0);
         }catch(error){
             console.log(error)
         }
     }
-    function editStock(stock : StockType){
+    function editStock(stock : StockType,itemsa:ItemType){
         setStockEditing(stock)
-       setItem_id(stock.itemId);
+    setitemidnew(itemsa.itemId);
        setquantity(stock.quantity)
     }
 
@@ -85,7 +99,7 @@ function Stock ()  {
                             <td>{stock.quantity}</td>
                             
                             <td>
-                            <button onClick={()=>editStock(stock)} className="bg-slate-300 text-slate-600 px-2 py-1 rounded-lg hover:bg-slate-400">Edit</button>
+                            <button onClick={()=>editStock(stock,items)} className="bg-slate-300 text-slate-600 px-2 py-1 rounded-lg hover:bg-slate-400">Edit</button>
                         
                             </td>
                         </tr>
@@ -97,30 +111,22 @@ function Stock ()  {
        </table>
        <div className="border border-slate-200 mx-auto p-3 rounded-lg max-w-[350px]">
             <form>
-            <div>
-                <label className="text-slate-600 font-sm block mb-2">Item Id</label>
-                <input value={item_id} type="text" required onChange={handleItem_id} className="bg-slate-100 text-slate-600 text-sm block mb-3 w-full p-2 border border-rose-300 rounded-lg"/>
+            
+            <div>    
+                <label className="text-slate-600 font-sm block mb-2">Item ID</label>
+                <select required value={itemIdnew} onChange={handleItem_id} className="bg-slate-100 text-slate-600 text-sm block mb-3 w-full p-2 border border-rose-300 rounded-lg">
+                    <option value="">Please Select Item Category</option>
+                    {items.map(function(item:any){
+                        return(
+                            <option value={item.itemId}>{item.itemId} | {item.itemName}</option>
+                        )
+                    })}
+                </select>
             </div> 
             <div>
                 <label className="text-slate-600 font-sm block mb-2">Stock Quantity</label>
                 <input  type="text" required onChange={handleStockquantity} value={quantity} className="bg-slate-100 text-slate-600 text-sm block mb-3 w-full p-2 border border-rose-300 rounded-lg" />
             </div>
-            
-            {/* <div>
-                <label className="text-slate-600 font-sm block mb-2">Item Description</label>
-                <input value={itemdescription} type="text" required onChange={handleItemDescription} className="bg-slate-100 text-slate-600 text-sm block mb-3 w-full p-2 border border-rose-300 rounded-lg"/>
-            </div>  */}
-            {/* <div>    
-                <label className="text-slate-600 font-sm block mb-2">Item Category ID</label>
-                <select required value={categoryId} onChange={handleCategoryId} className="bg-slate-100 text-slate-600 text-sm block mb-3 w-full p-2 border border-rose-300 rounded-lg">
-                    <option value="">Please Select Item Category</option>
-                    {categories.map(function(category:any){
-                        return(
-                            <option value={category.itemCategoryId}>{category.itemCategoryName}</option>
-                        )
-                    })}
-                </select>
-            </div>  */}
                 {stockEditing?
                 <>
                  <button className="py-3 px-4 bg-rose-600 text-white rounded hover:bg-rose-900 mb-2 text-sm" onClick={updateStock} type="button">Update Stock</button>
