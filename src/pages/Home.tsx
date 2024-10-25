@@ -7,6 +7,7 @@ function Home(){
         <div>
             <div><Link to='/itemcategories'>Item Category</Link></div>
             <div><Link to='/items'>Item</Link></div>
+            <div><Link to='/stocks'>Stock</Link></div>
             
            
         </div>
